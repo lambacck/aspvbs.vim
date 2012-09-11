@@ -20,24 +20,30 @@ elseif exists("b:current_syntax")
 endif
 
 if !exists("main_syntax")
-  let main_syntax = 'aspvbs'
+  let main_syntax = 'html'
 endif
 
 if version < 600
   source <sfile>:p:h/html.vim
 else
   runtime! syntax/html.vim
+  runtime! syntax/html/*.vim
 endif
-unlet b:current_syntax
+if exists("b:current_syntax")
+    unlet b:current_syntax
+endif
+
+syn include @pythonTop syntax/python.vim
 
 syn cluster htmlPreProc add=AspVBScriptInsideHtmlTags
+syn cluster htmlPreProc add=PythonInsideHtmlTags
 
 
 " Colored variable names, if written in hungarian notation
 hi def AspVBSVariableSimple   term=standout  ctermfg=3  guifg=#99ee99
 hi def AspVBSVariableComplex  term=standout  ctermfg=3  guifg=#ee9900
 syn match AspVBSVariableSimple  contained "\<\(bln\|byt\|dtm\=\|dbl\|int\|str\)\u\w*"
-syn match AspVBSVariableComplex contained "\<\(arr\|obj\)\u\w*"
+syn match AspVBSVariableComplex contained "\<\(arr\|ary\|obj\)\u\w*"
 
 
 " Functions and methods that are in VB but will cause errors in an ASP page
@@ -155,11 +161,13 @@ syn region AspVBSFold start="^\s*\(private\|public\)\=\(\s\+default\)\=\s\+\(sub
 syn region  AspVBScriptInsideHtmlTags keepend matchgroup=Delimiter start=+<%=\=+ end=+%>+ contains=@AspVBScriptTop, AspVBSFold
 syn region  AspVBScriptInsideHtmlTags keepend matchgroup=Delimiter start=+<script\s\+language="\=vbscript"\=[^>]*\s\+runatserver[^>]*>+ end=+</script>+ contains=@AspVBScriptTop
 
+"syn region PythonInsideHtmlTags keepend matchgroup=Delimiter start=+<script\s\+language="python"[^>]*\s\+runat="server"[^>]*>+ end=+</script>+ contains=@pythonTop
+syn region PythonInsideHtmlTags matchgroup=Delimiter start=+<script\s\+language="python"[^>]*\s\+runat="server"[^>]*>+ end=+</script>+ keepend contains=@pythonTop
 
 " Synchronization
 " syn sync match AspVBSSyncGroup grouphere AspVBScriptInsideHtmlTags "<%"
 " This is a kludge so the HTML will sync properly
-syn sync match htmlHighlight grouphere htmlTag "%>"
+"syn sync match htmlHighlight grouphere htmlTag "%>"
 
 
 
@@ -191,9 +199,5 @@ if version >= 508 || !exists("did_aspvbs_syn_inits")
 endif
 
 let b:current_syntax = "aspvbs"
-
-if main_syntax == 'aspvbs'
-  unlet main_syntax
-endif
 
 " vim: ts=8:sw=2:sts=0:noet
